@@ -1,6 +1,10 @@
 services:
   shithead:
     build: .
-    ports:
-      - "8000:8000"
     restart: unless-stopped
+    networks:
+      - reverse-proxy
+
+networks:
+  reverse-proxy:
+    external: true

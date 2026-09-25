@@ -82,6 +82,18 @@ async def ws_endpoint(websocket: WebSocket, room_code: str):
             await websocket.close()
             return
 
+        stale_ws = connections[room_code].get(player_id)
+        if stale_ws is not None and stale_ws is not websocket:
+            # Another live connection already claims this player id - most likely a
+            # duplicated browser tab that inherited the same sessionStorage id.
+            # Close it instead of silently orphaning it (it would otherwise keep its
+            # socket open but never appear in `connections` again, so it would stop
+            # receiving broadcasts - looking like it "never gets dealt any cards").
+            try:
+                await stale_ws.close()
+            except Exception:
+                pass
+
         connections[room_code][player_id] = websocket
         await websocket.send_json({
             "type": "joined",
