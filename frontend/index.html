@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>Shithead — The Card Den</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="felt-vignette"></div>
+<div class="noise"></div>
+
+<!-- ============ LANDING ============ -->
+<section id="screen-landing" class="screen screen--center active">
+  <div class="landing-card">
+    <p class="kicker">a game of ill repute</p>
+    <h1 class="wordmark">Shit<span class="wordmark__accent">head</span></h1>
+    <p class="tagline">Last one holding cards wears the crown of shame.</p>
+
+    <form id="join-form" class="form">
+      <label class="field">
+        <span class="field__label">Your name</span>
+        <input id="input-name" type="text" maxlength="20" placeholder="e.g. Lucky Lou" autocomplete="off" required />
+      </label>
+      <label class="field">
+        <span class="field__label">Table code <em>(leave blank to open a new table)</em></span>
+        <input id="input-room" type="text" maxlength="4" placeholder="ABCD" autocomplete="off" style="text-transform:uppercase" />
+      </label>
+      <button type="submit" class="btn btn--gold" id="btn-join">
+        <span>Take a Seat</span>
+      </button>
+      <p class="form-error" id="landing-error"></p>
+    </form>
+    <button type="button" class="link-btn" id="btn-how-to-play">How does this work?</button>
+  </div>
+</section>
+
+<!-- ============ LOBBY ============ -->
+<section id="screen-lobby" class="screen screen--center">
+  <div class="landing-card">
+    <p class="kicker">table</p>
+    <h2 class="room-code" id="lobby-room-code">----</h2>
+    <p class="tagline">Share this code. Anyone can walk in.</p>
+
+    <ul class="seat-list" id="lobby-players"></ul>
+
+    <button id="btn-start" class="btn btn--gold">
+      <span>Deal the Cards</span>
+    </button>
+    <p class="hint" id="lobby-hint">Waiting for the host to start&hellip;</p>
+  </div>
+</section>
+
+<!-- ============ GAME ============ -->
+<section id="screen-game" class="screen">
+  <header class="tablebar">
+    <div class="tablebar__brand">Shit<span class="wordmark__accent">head</span></div>
+    <div class="tablebar__room">Table <strong id="game-room-code">----</strong></div>
+    <button type="button" class="help-btn" id="btn-how-to-play-game" aria-label="How to play" title="How to play">?</button>
+    <span class="direction-indicator" id="direction-indicator"></span>
+    <div class="tablebar__turn" id="turn-banner">—</div>
+  </header>
+
+  <div class="table">
+    <div class="opponents" id="opponents-row"></div>
+
+    <div class="center-stage">
+      <div class="stack-group">
+        <div class="stack deck" id="deck-stack">
+          <div class="stack__count" id="deck-count">0</div>
+          <div class="stack__label">deck</div>
+        </div>
+        <div class="stack pile" id="pile-stack">
+          <div class="stack__cards" id="pile-cards"></div>
+          <div class="stack__label" id="pile-label">pile</div>
+        </div>
+      </div>
+      <div class="rank-req" id="rank-req"></div>
+    </div>
+
+    <div class="hud" id="log-hud">
+      <div class="hud__title">table talk</div>
+      <ul id="log-list"></ul>
+    </div>
+
+    <div class="my-area">
+      <div class="my-zones">
+        <div class="zone zone--down" id="my-down"></div>
+        <div class="zone zone--up" id="my-up"></div>
+      </div>
+      <div class="my-hand" id="my-hand"></div>
+      <div class="action-bar">
+        <button id="btn-play" class="btn btn--gold btn--sm" disabled>Play Selected</button>
+        <button id="btn-pickup" class="btn btn--red btn--sm" disabled>Pick Up Pile</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GAME OVER ============ -->
+<section id="screen-over" class="screen screen--center">
+  <div class="landing-card">
+    <p class="kicker">the reckoning</p>
+    <h2 class="wordmark" style="font-size:2.4rem;">Table's Closed</h2>
+    <ol class="finish-list" id="finish-list"></ol>
+    <button id="btn-again" class="btn btn--gold"><span>Back to the Door</span></button>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============ HOW TO PLAY ============ -->
+<div class="modal-overlay" id="how-to-play-overlay">
+  <div class="modal-card">
+    <button type="button" class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+    <p class="kicker">the rules of the den</p>
+    <h2 class="modal-title">How to Play</h2>
+    <p class="modal-lede">
+      Shithead — sometimes called Shed — is a shedding game of bluffing and bad luck.
+      Empty your hand before anyone else. Whoever's still holding cards when
+      everyone else is out wears the title.
+    </p>
+
+    <div class="rules-body">
+      <div class="rule">
+        <h3>The deal</h3>
+        <p>Every player gets nine cards: three face-down in front of you, three
+        face-up on top of those, and a hand of three. You play from your hand
+        first — the face-down and face-up cards stay put for now. Ranks run
+        <strong>2</strong> (lowest) up to <strong>A</strong> (highest).
+        Whoever was dealt the 4 of hearts leads the first trick.</p>
+      </div>
+
+      <div class="rule">
+        <h3>On your turn</h3>
+        <p>Play one card, or several of the same rank at once, equal to or
+        higher than the top card on the pile. Can't beat it? Pick up the
+        entire pile into your hand and play passes on.</p>
+      </div>
+
+      <div class="rule">
+        <h3>The special cards</h3>
+        <ul>
+          <li><strong>2</strong> — always playable, on anything. It resets the pile, so whoever's next can follow with any card.</li>
+          <li><strong>3</strong> — transparent. Play it like a normal card, but the next player plays against whatever card is underneath it instead.</li>
+          <li><strong>7</strong> — flips the rule: the next card played must be a 7 or lower, until someone breaks it with a 2 or burns the pile.</li>
+          <li><strong>8</strong> — reverses turn order. Heads-up, that just means you go again.</li>
+          <li><strong>10</strong> — always playable (unless a 7 is in effect). Burns the pile for good, and you go again.</li>
+          <li><strong>Four of a kind</strong> — four cards of the same rank stacked in a row also burns the pile, and you go again.</li>
+        </ul>
+      </div>
+
+      <div class="rule">
+        <h3>Running out of hand</h3>
+        <p>Once your hand and the draw deck are both empty, play straight from
+        your face-up cards. Once those are gone too, play blind from your
+        face-down cards: flip one, and if it doesn't beat the pile, you pick
+        up everything — the revealed card included.</p>
+      </div>
+
+      <div class="rule">
+        <h3>Winning (and losing)</h3>
+        <p>First player to clear their hand, face-up, and face-down cards is
+        safe and out of the running. Play continues among whoever's left —
+        the very last player still holding cards is the Shithead.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
