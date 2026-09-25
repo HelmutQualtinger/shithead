@@ -67,6 +67,7 @@
     <div class="tablebar__brand">Shit<span class="wordmark__accent">head</span></div>
     <div class="tablebar__room"><span data-i18n="game.table">Table</span> <strong id="game-room-code">----</strong></div>
     <button type="button" class="help-btn" id="btn-how-to-play-game" data-i18n-aria="game.help_title" data-i18n-title="game.help_title" aria-label="How to play" title="How to play">?</button>
+    <button type="button" class="help-btn" id="btn-sound-toggle" data-i18n-aria="game.sound_toggle" data-i18n-title="game.sound_toggle" aria-label="Toggle turn sound" title="Toggle turn sound">&#9834;</button>
     <div class="lang-switcher lang-switcher--inline">
       <button type="button" class="lang-btn" data-lang="en">EN</button>
       <button type="button" class="lang-btn" data-lang="de">DE</button>
@@ -100,10 +101,7 @@
     </div>
 
     <div class="my-area">
-      <div class="my-zones">
-        <div class="zone zone--down" id="my-down"></div>
-        <div class="zone zone--up" id="my-up"></div>
-      </div>
+      <div class="my-piles" id="my-piles"></div>
       <div class="my-hand" id="my-hand"></div>
       <div class="action-bar">
         <button id="btn-play" class="btn btn--gold btn--sm" disabled><span data-i18n="game.play_selected">Play Selected</span></button>

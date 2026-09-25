@@ -11,6 +11,56 @@ let myName = "";
 let roomCode = "";
 let lastState = null;
 let selected = new Set(); // selected card ids from hand/up zone
+let wasMyTurn = false;
+
+// ---------- turn sound ----------
+
+const SOUND_MUTED_KEY = "shithead_sound_muted";
+let audioCtx = null;
+let soundMuted = false;
+try {
+  soundMuted = localStorage.getItem(SOUND_MUTED_KEY) === "1";
+} catch (e) {
+  // storage unavailable - default to sound on
+}
+
+function unlockAudio() {
+  if (!audioCtx) {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (Ctx) audioCtx = new Ctx();
+  } else if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
+}
+
+function playTurnChime() {
+  if (soundMuted || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  // two-note gentle bell: a fifth apart, quick decay
+  [523.25, 783.99].forEach((freq, i) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    const start = now + i * 0.09;
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(0.16, start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.5);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(start);
+    osc.stop(start + 0.55);
+  });
+}
+
+function setSoundMuted(muted) {
+  soundMuted = muted;
+  try {
+    localStorage.setItem(SOUND_MUTED_KEY, muted ? "1" : "0");
+  } catch (e) {
+    // per-viewer convenience only
+  }
+  $("btn-sound-toggle").classList.toggle("is-muted", muted);
+}
 
 // ---------- screen management ----------
 
@@ -167,6 +217,8 @@ function renderGameOver(state) {
 function renderGame(state) {
   const me = state.players.find((p) => p.id === myPlayerId);
   const isMyTurn = state.currentPlayerId === myPlayerId;
+  if (isMyTurn && !wasMyTurn) playTurnChime();
+  wasMyTurn = isMyTurn;
 
   // turn banner
   const banner = $("turn-banner");
@@ -242,16 +294,37 @@ function buildOpponentEl(p, state) {
         <div class="card mini card--back"></div>
         <span class="opp__count">${p.handCount}</span>
       </div>
-      <div class="opp__up-cards"></div>
-      <div class="opp__stack">
-        <div class="card mini card--back"></div>
-        <span class="opp__count">${p.downCount}</span>
-      </div>
+      <div class="opp__piles"></div>
     </div>
   `;
-  const upWrap = div.querySelector(".opp__up-cards");
-  p.up.forEach((c) => upWrap.appendChild(buildCardEl(c, { mini: true })));
+  const pilesWrap = div.querySelector(".opp__piles");
+  buildPileStacks(pilesWrap, p.downCount, p.up, { mini: true });
   return div;
+}
+
+// Builds the classic "face-up sitting on face-down" pile row: one stack per
+// position, back card underneath, the matching up-card layered on top.
+function buildPileStacks(container, downCount, upCards, opts) {
+  const count = Math.max(downCount, upCards.length);
+  for (let i = 0; i < count; i++) {
+    const pile = document.createElement("div");
+    pile.className = opts.mini ? "pile-stack mini" : "pile-stack";
+    if (i < downCount) pile.appendChild(buildBackEl({ mini: opts.mini }));
+    if (i < upCards.length) {
+      const c = upCards[i];
+      const isSelected = selected.has(c.id);
+      const el = buildCardEl(c, {
+        mini: opts.mini,
+        selectable: opts.selectable,
+        selected: isSelected,
+        legal: opts.selectable && opts.legal && opts.legal.has(c.rank),
+        illegal: opts.selectable && opts.legal && opts.legal.size > 0 && !opts.legal.has(c.rank) && !isSelected,
+      });
+      if (opts.selectable) el.addEventListener("click", () => toggleSelect(c));
+      pile.appendChild(el);
+    }
+    container.appendChild(pile);
+  }
 }
 
 function renderPile(state) {
@@ -270,11 +343,9 @@ function renderPile(state) {
 }
 
 function renderMyArea(me, state, isMyTurn) {
-  const downWrap = $("my-down");
-  const upWrap = $("my-up");
+  const pilesWrap = $("my-piles");
   const handWrap = $("my-hand");
-  downWrap.innerHTML = "";
-  upWrap.innerHTML = "";
+  pilesWrap.innerHTML = "";
   handWrap.innerHTML = "";
 
   if (!me) return;
@@ -285,25 +356,29 @@ function renderMyArea(me, state, isMyTurn) {
   const upActive = isMyTurn && myPhase === "up";
   const handActive = isMyTurn && myPhase === "hand";
 
-  for (let i = 0; i < me.downCount; i++) {
-    const el = buildBackEl({ selectable: downActive });
-    if (downActive) {
-      el.addEventListener("click", () => send({ type: "play_down", index: i }));
+  const count = Math.max(me.downCount, me.up.length);
+  for (let i = 0; i < count; i++) {
+    const pile = document.createElement("div");
+    pile.className = "pile-stack";
+    if (i < me.downCount) {
+      const back = buildBackEl({ selectable: downActive });
+      if (downActive) back.addEventListener("click", () => send({ type: "play_down", index: i }));
+      pile.appendChild(back);
     }
-    downWrap.appendChild(el);
+    if (i < me.up.length) {
+      const c = me.up[i];
+      const isSelected = selected.has(c.id);
+      const el = buildCardEl(c, {
+        selectable: upActive,
+        selected: isSelected,
+        legal: upActive && legal.has(c.rank),
+        illegal: upActive && legal.size > 0 && !legal.has(c.rank) && !isSelected,
+      });
+      if (upActive) el.addEventListener("click", () => toggleSelect(c));
+      pile.appendChild(el);
+    }
+    pilesWrap.appendChild(pile);
   }
-
-  me.up.forEach((c) => {
-    const isSelected = selected.has(c.id);
-    const el = buildCardEl(c, {
-      selectable: upActive,
-      selected: isSelected,
-      legal: upActive && legal.has(c.rank),
-      illegal: upActive && legal.size > 0 && !legal.has(c.rank) && !isSelected,
-    });
-    if (upActive) el.addEventListener("click", () => toggleSelect(c));
-    upWrap.appendChild(el);
-  });
 
   (me.hand || []).forEach((c) => {
     const isSelected = selected.has(c.id);
@@ -437,3 +512,9 @@ document.querySelectorAll(".lang-btn").forEach((btn) => {
 });
 
 applyStaticTranslations();
+
+// ---------- sound toggle ----------
+
+setSoundMuted(soundMuted);
+$("btn-sound-toggle").addEventListener("click", () => setSoundMuted(!soundMuted));
+document.body.addEventListener("pointerdown", unlockAudio, { once: true });

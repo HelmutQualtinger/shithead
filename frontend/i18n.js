@@ -26,6 +26,7 @@ const TRANSLATIONS = {
 
     "game.table": "Table",
     "game.help_title": "How to play",
+    "game.sound_toggle": "Toggle turn sound",
     "game.deck": "deck",
     "game.pile": "pile",
     "game.hud_title": "table talk",
@@ -116,6 +117,7 @@ const TRANSLATIONS = {
 
     "game.table": "Tisch",
     "game.help_title": "Spielregeln",
+    "game.sound_toggle": "Ton bei deinem Zug",
     "game.deck": "Nachziehstapel",
     "game.pile": "Ablage",
     "game.hud_title": "Tischgeflüster",
@@ -206,6 +208,7 @@ const TRANSLATIONS = {
 
     "game.table": "Tavolo",
     "game.help_title": "Come si gioca",
+    "game.sound_toggle": "Suono al tuo turno",
     "game.deck": "mazzo",
     "game.pile": "pila",
     "game.hud_title": "chiacchiere al tavolo",
@@ -296,6 +299,7 @@ const TRANSLATIONS = {
 
     "game.table": "Table",
     "game.help_title": "Comment jouer",
+    "game.sound_toggle": "Son \u00e0 votre tour",
     "game.deck": "pioche",
     "game.pile": "pile",
     "game.hud_title": "on papote",
