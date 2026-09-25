@@ -42,9 +42,9 @@ async def broadcast_state(room_code: str) -> None:
             pass
 
 
-async def send_error(ws: WebSocket, message: str) -> None:
+async def send_error(ws: WebSocket, code: str, params: dict | None = None) -> None:
     try:
-        await ws.send_json({"type": "error", "message": message})
+        await ws.send_json({"type": "error", "code": code, "params": params or {}})
     except Exception:
         pass
 
@@ -59,7 +59,7 @@ async def ws_endpoint(websocket: WebSocket, room_code: str):
         raw = await websocket.receive_text()
         msg = json.loads(raw)
         if msg.get("type") != "join":
-            await send_error(websocket, "First message must be 'join'.")
+            await send_error(websocket, "bad_first_message")
             await websocket.close()
             return
 
@@ -78,7 +78,7 @@ async def ws_endpoint(websocket: WebSocket, room_code: str):
         try:
             game.add_player(player_id, name)
         except GameError as e:
-            await send_error(websocket, str(e))
+            await send_error(websocket, e.code, e.params)
             await websocket.close()
             return
 
@@ -106,10 +106,10 @@ async def ws_endpoint(websocket: WebSocket, room_code: str):
                 elif mtype == "ping":
                     continue
                 else:
-                    await send_error(websocket, f"Unknown message type: {mtype}")
+                    await send_error(websocket, "unknown_message_type", {"type": mtype})
                     continue
             except GameError as e:
-                await send_error(websocket, str(e))
+                await send_error(websocket, e.code, e.params)
                 continue
             await broadcast_state(room_code)
 

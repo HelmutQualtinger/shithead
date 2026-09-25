@@ -17,6 +17,7 @@ let selected = new Set(); // selected card ids from hand/up zone
 function showScreen(name) {
   document.querySelectorAll(".screen").forEach((el) => el.classList.remove("active"));
   $(`screen-${name}`).classList.add("active");
+  $("lang-switcher").style.display = name === "game" ? "none" : "flex";
 }
 
 function toast(message) {
@@ -25,6 +26,39 @@ function toast(message) {
   el.classList.add("show");
   clearTimeout(toast._t);
   toast._t = setTimeout(() => el.classList.remove("show"), 3200);
+}
+
+// ---------- i18n ----------
+
+function applyStaticTranslations() {
+  document.documentElement.lang = currentLang;
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    if (key.endsWith("_html")) {
+      el.innerHTML = t(key);
+    } else {
+      el.textContent = t(key);
+    }
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    el.placeholder = t(el.getAttribute("data-i18n-placeholder"));
+  });
+  document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+    el.title = t(el.getAttribute("data-i18n-title"));
+  });
+  document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+    el.setAttribute("aria-label", t(el.getAttribute("data-i18n-aria")));
+  });
+  document.querySelectorAll(".lang-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.lang === currentLang);
+  });
+}
+
+function formatLogEntry(entry) {
+  const params = { ...entry };
+  delete params.event;
+  if (Array.isArray(params.cards)) params.cards = params.cards.join(", ");
+  return t(`log.${entry.event}`, params);
 }
 
 // ---------- connection ----------
@@ -46,12 +80,12 @@ function connect(code, name) {
 
   ws.addEventListener("close", () => {
     if (lastState && lastState.phase !== "finished") {
-      toast("Connection to the table was lost.");
+      toast(t("game.toast_connection_lost"));
     }
   });
 
   ws.addEventListener("error", () => {
-    $("landing-error").textContent = "Couldn't reach the table. Try again.";
+    $("landing-error").textContent = t("landing.error_connect_failed");
   });
 }
 
@@ -71,7 +105,9 @@ function handleMessage(msg) {
     selected.clear();
     renderState(lastState);
   } else if (msg.type === "error") {
-    toast(msg.message);
+    const key = `err.${msg.code}`;
+    const known = TRANSLATIONS.en[key] !== undefined;
+    toast(known ? t(key, msg.params) : t("err.default"));
   }
 }
 
@@ -98,7 +134,8 @@ function renderLobby(state) {
   state.players.forEach((p, i) => {
     const li = document.createElement("li");
     const isHost = p.id === state.hostId;
-    li.innerHTML = `<span class="seat-num">${i + 1}</span><span>${escapeHtml(p.name)}${p.connected ? "" : " (gone)"}</span>${isHost ? '<span class="seat-host">Host</span>' : ""}`;
+    const goneSuffix = p.connected ? "" : ` ${t("lobby.gone")}`;
+    li.innerHTML = `<span class="seat-num">${i + 1}</span><span>${escapeHtml(p.name)}${goneSuffix}</span>${isHost ? `<span class="seat-host">${t("lobby.host")}</span>` : ""}`;
     list.appendChild(li);
   });
 
@@ -107,19 +144,20 @@ function renderLobby(state) {
   startBtn.style.display = amHost ? "inline-flex" : "none";
   startBtn.disabled = state.players.length < 2;
   $("lobby-hint").style.display = amHost ? "none" : "block";
-  const hostName = state.players.find((p) => p.id === state.hostId)?.name || "the host";
+  const hostName = state.players.find((p) => p.id === state.hostId)?.name || t("lobby.the_host");
   $("lobby-hint").textContent =
-    state.players.length < 2 ? "Waiting for more players to join…" : `Waiting for ${hostName} to start…`;
+    state.players.length < 2 ? t("lobby.waiting_players") : t("lobby.waiting_host", { name: hostName });
 }
 
 function renderGameOver(state) {
   const list = $("finish-list");
   list.innerHTML = "";
-  const medals = ["1st", "2nd", "3rd", "4th", "5th", "6th"];
   state.winnerOrder.forEach((name, i) => {
     const li = document.createElement("li");
     const isLast = i === state.winnerOrder.length - 1;
-    li.innerHTML = `<span class="medal">${medals[i] || i + 1}</span><span>${escapeHtml(name)}${isLast ? " — the Shithead" : ""}</span>`;
+    const medal = t(`over.medal_${i + 1}`) || String(i + 1);
+    const suffix = isLast ? t("over.shithead_suffix") : "";
+    li.innerHTML = `<span class="medal">${medal}</span><span>${escapeHtml(name)}${suffix}</span>`;
     list.appendChild(li);
   });
 }
@@ -133,11 +171,11 @@ function renderGame(state) {
   // turn banner
   const banner = $("turn-banner");
   if (isMyTurn) {
-    banner.textContent = "Your move";
+    banner.textContent = t("game.your_move");
     banner.classList.add("is-me");
   } else {
     const current = state.players.find((p) => p.id === state.currentPlayerId);
-    banner.textContent = current ? `Waiting on ${current.name}` : "—";
+    banner.textContent = current ? t("game.waiting_on", { name: current.name }) : "—";
     banner.classList.remove("is-me");
   }
 
@@ -155,25 +193,25 @@ function renderGame(state) {
   renderPile(state);
   const req = $("rank-req");
   if (state.effectiveTopRank === "7") {
-    req.innerHTML = `On a <strong>7</strong> — play 7 or lower`;
+    req.innerHTML = t("game.rank_on_seven").replace(/7/, "<strong>7</strong>");
   } else if (state.effectiveTopRank) {
-    req.innerHTML = `Beat: <strong>${rankLabel(state.effectiveTopRank)}</strong>`;
+    req.innerHTML = t("game.rank_beat", { rank: `<strong>${rankLabel(state.effectiveTopRank)}</strong>` });
   } else if (state.pileCount) {
-    req.textContent = "Table is wide open — play anything";
+    req.textContent = t("game.rank_open");
   } else {
-    req.textContent = "Table is empty — lead with anything";
+    req.textContent = t("game.rank_empty");
   }
   const dirEl = $("direction-indicator");
   const activeCount = state.players.filter((p) => !p.isOut).length;
   dirEl.style.display = activeCount > 2 ? "inline" : "none";
-  dirEl.textContent = state.direction === 1 ? "↻ clockwise" : "↺ counter-clockwise";
+  dirEl.textContent = state.direction === 1 ? t("game.dir_clockwise") : t("game.dir_counter");
 
   // log
   const logList = $("log-list");
   logList.innerHTML = "";
-  (state.log || []).slice().reverse().forEach((line) => {
+  (state.log || []).slice().reverse().forEach((entry) => {
     const li = document.createElement("li");
-    li.textContent = line;
+    li.textContent = formatLogEntry(entry);
     logList.appendChild(li);
   });
 
@@ -187,7 +225,11 @@ function buildOpponentEl(p, state) {
   if (p.isOut) div.classList.add("is-out");
 
   const initial = (p.name[0] || "?").toUpperCase();
-  const badge = p.isOut ? `<span class="opp__badge">#${p.finishedRank} out</span>` : p.connected ? "" : `<span class="opp__badge">offline</span>`;
+  const badge = p.isOut
+    ? `<span class="opp__badge">${t("game.badge_out", { n: p.finishedRank })}</span>`
+    : p.connected
+    ? ""
+    : `<span class="opp__badge">${t("game.badge_offline")}</span>`;
 
   div.innerHTML = `
     <div class="opp__head">
@@ -224,7 +266,7 @@ function renderPile(state) {
     el.style.zIndex = String(i);
     wrap.appendChild(el);
   });
-  $("pile-label").textContent = state.pileCount ? `pile · ${state.pileCount}` : "pile";
+  $("pile-label").textContent = state.pileCount ? `${t("game.pile")} · ${state.pileCount}` : t("game.pile");
 }
 
 function renderMyArea(me, state, isMyTurn) {
@@ -383,3 +425,15 @@ $("how-to-play-overlay").addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeHowToPlay();
 });
+
+// ---------- language switcher ----------
+
+document.querySelectorAll(".lang-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    setLang(btn.dataset.lang);
+    applyStaticTranslations();
+    if (lastState) renderState(lastState);
+  });
+});
+
+applyStaticTranslations();

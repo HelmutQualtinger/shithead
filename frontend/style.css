@@ -70,6 +70,51 @@ body {
 
 h1, h2 { font-family: var(--font-display); margin: 0; }
 
+/* ---------- language switcher ---------- */
+
+.lang-switcher {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 40;
+  display: flex;
+  gap: 4px;
+  background: rgba(6, 20, 15, 0.55);
+  border: 1px solid rgba(226, 189, 107, 0.3);
+  border-radius: 20px;
+  padding: 4px;
+  backdrop-filter: blur(4px);
+}
+
+.lang-btn {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border: none;
+  border-radius: 14px;
+  padding: 5px 9px;
+  background: transparent;
+  color: var(--gold-300);
+  opacity: 0.65;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease, color 0.15s ease;
+}
+.lang-btn:hover { opacity: 1; }
+.lang-btn.active {
+  background: linear-gradient(180deg, var(--gold-300), var(--gold-500));
+  color: var(--ink);
+  opacity: 1;
+}
+
+.lang-switcher--inline {
+  position: static;
+  background: none;
+  border: none;
+  padding: 0;
+  backdrop-filter: none;
+}
+
 /* ---------- screens ---------- */
 
 .screen {
@@ -626,4 +671,7 @@ input[type="text"]::placeholder { color: #9a8c6e; }
   .modal-card { padding: 32px 22px 26px; }
   .modal-title { font-size: 1.7rem; }
   .modal-overlay { padding: 28px 12px; }
+  .tablebar { flex-wrap: wrap; row-gap: 6px; }
+  .tablebar__turn { margin-left: 0; order: 5; width: 100%; text-align: center; }
+  .lang-switcher { top: auto; bottom: 12px; right: 12px; }
 }

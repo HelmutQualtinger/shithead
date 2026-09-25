@@ -13,42 +13,49 @@
 <div class="felt-vignette"></div>
 <div class="noise"></div>
 
+<div class="lang-switcher" id="lang-switcher">
+  <button type="button" class="lang-btn" data-lang="en">EN</button>
+  <button type="button" class="lang-btn" data-lang="de">DE</button>
+  <button type="button" class="lang-btn" data-lang="it">IT</button>
+  <button type="button" class="lang-btn" data-lang="fr">FR</button>
+</div>
+
 <!-- ============ LANDING ============ -->
 <section id="screen-landing" class="screen screen--center active">
   <div class="landing-card">
-    <p class="kicker">a game of ill repute</p>
+    <p class="kicker" data-i18n="landing.kicker">a game of ill repute</p>
     <h1 class="wordmark">Shit<span class="wordmark__accent">head</span></h1>
-    <p class="tagline">Last one holding cards wears the crown of shame.</p>
+    <p class="tagline" data-i18n="landing.tagline">Last one holding cards wears the crown of shame.</p>
 
     <form id="join-form" class="form">
       <label class="field">
-        <span class="field__label">Your name</span>
-        <input id="input-name" type="text" maxlength="20" placeholder="e.g. Lucky Lou" autocomplete="off" required />
+        <span class="field__label" data-i18n="landing.name_label">Your name</span>
+        <input id="input-name" type="text" maxlength="20" data-i18n-placeholder="landing.name_placeholder" placeholder="e.g. Lucky Lou" autocomplete="off" required />
       </label>
       <label class="field">
-        <span class="field__label">Table code <em>(leave blank to open a new table)</em></span>
+        <span class="field__label"><span data-i18n="landing.room_label">Table code</span> <em data-i18n="landing.room_hint">(leave blank to open a new table)</em></span>
         <input id="input-room" type="text" maxlength="4" placeholder="ABCD" autocomplete="off" style="text-transform:uppercase" />
       </label>
       <button type="submit" class="btn btn--gold" id="btn-join">
-        <span>Take a Seat</span>
+        <span data-i18n="landing.take_seat">Take a Seat</span>
       </button>
       <p class="form-error" id="landing-error"></p>
     </form>
-    <button type="button" class="link-btn" id="btn-how-to-play">How does this work?</button>
+    <button type="button" class="link-btn" id="btn-how-to-play" data-i18n="landing.how_it_works">How does this work?</button>
   </div>
 </section>
 
 <!-- ============ LOBBY ============ -->
 <section id="screen-lobby" class="screen screen--center">
   <div class="landing-card">
-    <p class="kicker">table</p>
+    <p class="kicker" data-i18n="lobby.kicker">table</p>
     <h2 class="room-code" id="lobby-room-code">----</h2>
-    <p class="tagline">Share this code. Anyone can walk in.</p>
+    <p class="tagline" data-i18n="lobby.tagline">Share this code. Anyone can walk in.</p>
 
     <ul class="seat-list" id="lobby-players"></ul>
 
     <button id="btn-start" class="btn btn--gold">
-      <span>Deal the Cards</span>
+      <span data-i18n="lobby.deal">Deal the Cards</span>
     </button>
     <p class="hint" id="lobby-hint">Waiting for the host to start&hellip;</p>
   </div>
@@ -58,8 +65,14 @@
 <section id="screen-game" class="screen">
   <header class="tablebar">
     <div class="tablebar__brand">Shit<span class="wordmark__accent">head</span></div>
-    <div class="tablebar__room">Table <strong id="game-room-code">----</strong></div>
-    <button type="button" class="help-btn" id="btn-how-to-play-game" aria-label="How to play" title="How to play">?</button>
+    <div class="tablebar__room"><span data-i18n="game.table">Table</span> <strong id="game-room-code">----</strong></div>
+    <button type="button" class="help-btn" id="btn-how-to-play-game" data-i18n-aria="game.help_title" data-i18n-title="game.help_title" aria-label="How to play" title="How to play">?</button>
+    <div class="lang-switcher lang-switcher--inline">
+      <button type="button" class="lang-btn" data-lang="en">EN</button>
+      <button type="button" class="lang-btn" data-lang="de">DE</button>
+      <button type="button" class="lang-btn" data-lang="it">IT</button>
+      <button type="button" class="lang-btn" data-lang="fr">FR</button>
+    </div>
     <span class="direction-indicator" id="direction-indicator"></span>
     <div class="tablebar__turn" id="turn-banner">—</div>
   </header>
@@ -71,7 +84,7 @@
       <div class="stack-group">
         <div class="stack deck" id="deck-stack">
           <div class="stack__count" id="deck-count">0</div>
-          <div class="stack__label">deck</div>
+          <div class="stack__label" data-i18n="game.deck">deck</div>
         </div>
         <div class="stack pile" id="pile-stack">
           <div class="stack__cards" id="pile-cards"></div>
@@ -82,7 +95,7 @@
     </div>
 
     <div class="hud" id="log-hud">
-      <div class="hud__title">table talk</div>
+      <div class="hud__title" data-i18n="game.hud_title">table talk</div>
       <ul id="log-list"></ul>
     </div>
 
@@ -93,8 +106,8 @@
       </div>
       <div class="my-hand" id="my-hand"></div>
       <div class="action-bar">
-        <button id="btn-play" class="btn btn--gold btn--sm" disabled>Play Selected</button>
-        <button id="btn-pickup" class="btn btn--red btn--sm" disabled>Pick Up Pile</button>
+        <button id="btn-play" class="btn btn--gold btn--sm" disabled><span data-i18n="game.play_selected">Play Selected</span></button>
+        <button id="btn-pickup" class="btn btn--red btn--sm" disabled><span data-i18n="game.pick_up">Pick Up Pile</span></button>
       </div>
     </div>
   </div>
@@ -103,10 +116,10 @@
 <!-- ============ GAME OVER ============ -->
 <section id="screen-over" class="screen screen--center">
   <div class="landing-card">
-    <p class="kicker">the reckoning</p>
-    <h2 class="wordmark" style="font-size:2.4rem;">Table's Closed</h2>
+    <p class="kicker" data-i18n="over.kicker">the reckoning</p>
+    <h2 class="wordmark" style="font-size:2.4rem;" data-i18n="over.title">Table's Closed</h2>
     <ol class="finish-list" id="finish-list"></ol>
-    <button id="btn-again" class="btn btn--gold"><span>Back to the Door</span></button>
+    <button id="btn-again" class="btn btn--gold"><span data-i18n="over.back">Back to the Door</span></button>
   </div>
 </section>
 
@@ -116,9 +129,9 @@
 <div class="modal-overlay" id="how-to-play-overlay">
   <div class="modal-card">
     <button type="button" class="modal-close" id="modal-close" aria-label="Close">&times;</button>
-    <p class="kicker">the rules of the den</p>
-    <h2 class="modal-title">How to Play</h2>
-    <p class="modal-lede">
+    <p class="kicker" data-i18n="modal.kicker">the rules of the den</p>
+    <h2 class="modal-title" data-i18n="modal.title">How to Play</h2>
+    <p class="modal-lede" data-i18n="modal.lede">
       Shithead — sometimes called Shed — is a shedding game of bluffing and bad luck.
       Empty your hand before anyone else. Whoever's still holding cards when
       everyone else is out wears the title.
@@ -126,8 +139,8 @@
 
     <div class="rules-body">
       <div class="rule">
-        <h3>The deal</h3>
-        <p>Every player gets nine cards: three face-down in front of you, three
+        <h3 data-i18n="modal.rule1_heading">The deal</h3>
+        <p data-i18n="modal.rule1_body_html">Every player gets nine cards: three face-down in front of you, three
         face-up on top of those, and a hand of three. You play from your hand
         first — the face-down and face-up cards stay put for now. Ranks run
         <strong>2</strong> (lowest) up to <strong>A</strong> (highest).
@@ -135,15 +148,15 @@
       </div>
 
       <div class="rule">
-        <h3>On your turn</h3>
-        <p>Play one card, or several of the same rank at once, equal to or
+        <h3 data-i18n="modal.rule2_heading">On your turn</h3>
+        <p data-i18n="modal.rule2_body_html">Play one card, or several of the same rank at once, equal to or
         higher than the top card on the pile. Can't beat it? Pick up the
         entire pile into your hand and play passes on.</p>
       </div>
 
       <div class="rule">
-        <h3>The special cards</h3>
-        <ul>
+        <h3 data-i18n="modal.rule3_heading">The special cards</h3>
+        <ul data-i18n="modal.rule3_list_html">
           <li><strong>2</strong> — always playable, on anything. It resets the pile, so whoever's next can follow with any card.</li>
           <li><strong>3</strong> — transparent. Play it like a normal card, but the next player plays against whatever card is underneath it instead.</li>
           <li><strong>7</strong> — flips the rule: the next card played must be a 7 or lower, until someone breaks it with a 2 or burns the pile.</li>
@@ -154,16 +167,16 @@
       </div>
 
       <div class="rule">
-        <h3>Running out of hand</h3>
-        <p>Once your hand and the draw deck are both empty, play straight from
+        <h3 data-i18n="modal.rule4_heading">Running out of hand</h3>
+        <p data-i18n="modal.rule4_body_html">Once your hand and the draw deck are both empty, play straight from
         your face-up cards. Once those are gone too, play blind from your
         face-down cards: flip one, and if it doesn't beat the pile, you pick
         up everything — the revealed card included.</p>
       </div>
 
       <div class="rule">
-        <h3>Winning (and losing)</h3>
-        <p>First player to clear their hand, face-up, and face-down cards is
+        <h3 data-i18n="modal.rule5_heading">Winning (and losing)</h3>
+        <p data-i18n="modal.rule5_body_html">First player to clear their hand, face-up, and face-down cards is
         safe and out of the running. Play continues among whoever's left —
         the very last player still holding cards is the Shithead.</p>
       </div>
@@ -171,6 +184,7 @@
   </div>
 </div>
 
+<script src="i18n.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
