@@ -3,6 +3,8 @@
 A browser-based, multiplayer implementation of the card game Shithead (aka Shed).
 Python backend (FastAPI + WebSockets), vanilla HTML/CSS/JS frontend, no build step.
 
+![Shithead gameplay screenshot](docs/screenshot.jpg)
+
 ## Rules implemented
 
 - 2–6 players, 52-card deck, 3 cards face-down, 3 face-up on top, hand of 3.
