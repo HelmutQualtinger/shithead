@@ -4,6 +4,23 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
 <title>Shithead — The Card Den</title>
+<meta name="description" content="A browser-based, multiplayer implementation of the card game Shithead (aka Shed). No install, no accounts — just a room code." />
+
+<!-- Open Graph / social preview. og:image and og:url need to be absolute for
+     Facebook/WhatsApp to render a preview, so {{ORIGIN}} is substituted with
+     the request's actual scheme+host by the "/" route in server.py. -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Shithead — The Card Den" />
+<meta property="og:description" content="Last one holding cards wears the crown of shame. Play the card game Shithead with friends, right in your browser." />
+<meta property="og:image" content="{{ORIGIN}}/og-image.jpg" />
+<meta property="og:url" content="{{ORIGIN}}/" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Shithead — The Card Den" />
+<meta name="twitter:description" content="Last one holding cards wears the crown of shame. Play the card game Shithead with friends, right in your browser." />
+<meta name="twitter:image" content="{{ORIGIN}}/og-image.jpg" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />

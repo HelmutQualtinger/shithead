@@ -163,7 +163,12 @@ function handleMessage(msg) {
 
 // ---------- top-level render ----------
 
+const DEFAULT_TITLE = document.title;
+
 function renderState(state) {
+  const me = state.players.find((p) => p.id === myPlayerId);
+  document.title = me ? `${me.name} — Shithead` : DEFAULT_TITLE;
+
   if (state.phase === "lobby") {
     showScreen("lobby");
     renderLobby(state);

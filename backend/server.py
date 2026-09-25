@@ -8,13 +8,14 @@ import string
 import uuid
 from pathlib import Path
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from game import Game, GameError
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
+INDEX_HTML = (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
 
 app = FastAPI(title="Shithead")
 
@@ -139,6 +140,18 @@ async def ws_endpoint(websocket: WebSocket, room_code: str):
                     connections.pop(room_code, None)
                 else:
                     await broadcast_state(room_code)
+
+
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request) -> HTMLResponse:
+    # og:image/og:url must be absolute for Facebook/WhatsApp link previews to
+    # work, so the placeholder is filled in with this request's actual origin
+    # rather than baked into the static file. Trust X-Forwarded-Proto since
+    # this runs behind an nginx reverse proxy without uvicorn --proxy-headers,
+    # so request.url.scheme would otherwise always read "http".
+    scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+    origin = f"{scheme}://{request.url.netloc}"
+    return HTMLResponse(INDEX_HTML.replace("{{ORIGIN}}", origin))
 
 
 app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
